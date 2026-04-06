@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cherry Lim — SPX Cache Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #E84325;
+  --charcoal: #1C1C1E;
+  --slate: #4A5568;
+  --muted: #718096;
+  --border: #E2E8F0;
+  --surface: #F7F6F3;
+  --card: #FFFFFF;
+  --cream: #FDFCFA;
+  --green: #2D6A4F;
+  --red: #C0392B;
+  --blue-link: #4A6FA5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #EFEDE8;
+  padding: 2rem 1rem;
+  color: var(--charcoal);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--card);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
+.header {
+  background: var(--charcoal);
+  padding: 2rem 2.4rem 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: var(--orange);
+}
+.header-label {
+  font-family: Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 10px;
+}
+.header h1 {
+  font-family: 'EB Garamond', Garamond, serif;
+  font-size: 28px;
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.meta-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.meta-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  padding: 3px 12px;
+  border-radius: 2px;
+  font-family: Georgia, serif;
+}
+.meta-pill.highlight {
+  background: rgba(232,67,37,0.18);
+  border-color: rgba(232,67,37,0.35);
+  color: #F4A68C;
+}
+.progress-wrap { background: #2C2C2E; height: 3px; }
+.progress-fill { background: var(--orange); height: 3px; transition: width 0.5s ease; width: 0%; }
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 12px 22px;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab:hover { color: var(--charcoal); }
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); font-style: italic; }
+.day-panel { display: none; padding: 2rem 2.4rem; }
+.day-panel.active { display: block; }
+.day-eyebrow {
+  font-family: Georgia, serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--orange);
+  margin-bottom: 6px;
+}
+.day-title {
+  font-family: 'EB Garamond', Garamond, serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+  line-height: 1.25;
+}
+.day-theme {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 1.4rem;
+}
+.intro-block {
+  border-left: 2px solid var(--border);
+  padding: 10px 16px;
+  margin-bottom: 1.8rem;
+  color: var(--slate);
+  font-size: 14px;
+  line-height: 1.75;
+  background: var(--cream);
+}
+.section-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--muted);
+  margin: 1.8rem 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.reading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.reading-row:last-child { border-bottom: none; }
+.reading-row a { font-size: 14px; color: var(--blue-link); text-decoration: none; }
+.reading-row a:hover { color: #2c4f7a; text-decoration: underline; }
+.time-chip { font-size: 11px; color: var(--muted); white-space: nowrap; font-style: italic; flex-shrink: 0; }
+.folder-note {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border-radius: 2px;
+  border-left: 2px solid var(--border);
+}
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #F0EDE8;
+}
+.task-row:last-child { border-bottom: none; }
+.task-row input[type=checkbox] { margin-top: 4px; accent-color: var(--orange); flex-shrink: 0; width: 14px; height: 14px; }
+.task-row label { font-size: 14px; color: var(--charcoal); cursor: pointer; line-height: 1.6; }
+.task-row label.done { text-decoration: line-through; color: #B0A89C; }
+.quiz-block { margin-bottom: 18px; }
+.quiz-q-text { font-size: 14px; font-weight: bold; color: var(--charcoal); margin-bottom: 8px; line-height: 1.5; }
+.quiz-opt { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+.quiz-opt input { accent-color: var(--orange); flex-shrink: 0; margin-top: 3px; }
+.quiz-opt label { font-size: 14px; color: var(--slate); cursor: pointer; line-height: 1.5; }
+.quiz-opt label.correct { color: var(--green); font-weight: bold; }
+.quiz-opt label.wrong { color: var(--red); }
+.open-textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: Georgia, serif;
+  resize: vertical;
+  min-height: 70px;
+  color: var(--charcoal);
+  background: var(--cream);
+  line-height: 1.6;
+}
+.open-textarea:focus { outline: none; border-color: var(--slate); }
+.check-btn {
+  display: inline-block;
+  margin-top: 10px;
+  background: transparent;
+  color: var(--orange);
+  border: 1px solid var(--orange);
+  padding: 7px 20px;
+  font-size: 13px;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, color 0.15s;
+}
+.check-btn:hover { background: var(--orange); color: white; }
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0 0; }
+.reflection-wrap {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 16px 18px;
+}
+.reflection-prompt { font-size: 13.5px; color: var(--slate); font-style: italic; margin-bottom: 10px; line-height: 1.7; }
+.questions-hint { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 8px; }
+.questions-textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: Georgia, serif;
+  resize: vertical;
+  min-height: 100px;
+  color: var(--charcoal);
+  background: var(--cream);
+  line-height: 1.6;
+}
+.questions-textarea:focus { outline: none; border-color: var(--slate); }
+.footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 14px 2.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.footer-brand { font-style: italic; color: var(--orange); font-family: 'EB Garamond', serif; font-size: 14px; }
+.footer-sep { color: var(--border); }
+.footer-item { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-label">Onboarding Guru &mdash; Week 1 Plan</div>
+    <h1>Welcome, Cherry Lim!</h1>
+    <div class="meta-row">
+      <span class="meta-pill highlight">SPX</span>
+      <span class="meta-pill highlight">Cache</span>
+      <span class="meta-pill">Manager: Yean Huar</span>
+      <span class="meta-pill">Buddy: Sherry Koo</span>
+      <span class="meta-pill">Starts 21 Apr 2026</span>
+    </div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="progress"></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchDay(0)">Day 1 &mdash; Mon</div>
+    <div class="tab" onclick="switchDay(1)">Day 2 &mdash; Tue</div>
+    <div class="tab" onclick="switchDay(2)">Day 3 &mdash; Wed</div>
+    <div class="tab" onclick="switchDay(3)">Day 4 &mdash; Thu</div>
+    <div class="tab" onclick="switchDay(4)">Day 5 &mdash; Fri</div>
+  </div>
+
+  <!-- DAY 1 -->
+  <div class="day-panel active" id="day-0">
+    <div class="day-eyebrow">Mon, 21 Apr 2026</div>
+    <div class="day-title">Foundation &amp; First Steps</div>
+    <div class="day-theme">Getting set up, oriented, and ready to contribute</div>
+    <div class="intro-block">Welcome to SPX! Today is all about getting your tools ready, understanding where SPX fits in the Shopee ecosystem, and setting yourself up for a great first week. Lean on Sherry Koo throughout the day — no question is too small.</div>
+
+    <div class="section-label">Admin Setup Checklist</div>
+    <div class="task-row"><input type="checkbox" id="a1" onchange="tick('a1')"><label for="a1">Activate your Sea Group email account and set up Outlook</label></div>
+    <div class="task-row"><input type="checkbox" id="a2" onchange="tick('a2')"><label for="a2">Download and configure the VPN (required for Confluence and internal systems off-site)</label></div>
+    <div class="task-row"><input type="checkbox" id="a3" onchange="tick('a3')"><label for="a3">Set up SeaTalk on your work device and join your team's channels (ask Sherry Koo to add you)</label></div>
+    <div class="task-row"><input type="checkbox" id="a4" onchange="tick('a4')"><label for="a4">Complete compulsory eLearning courses at learning.sea.com</label></div>
+    <div class="task-row"><input type="checkbox" id="a5" onchange="tick('a5')"><label for="a5">Set up Jira and Confluence access — ask Sherry Koo to add you to the relevant spaces</label></div>
+    <div class="task-row"><input type="checkbox" id="a6" onchange="tick('a6')"><label for="a6">On SOUP, request access to UAT and Live — Role: [All] REG PM/PS/Ops, Portals: SPX and POP</label></div>
+    <div class="task-row"><input type="checkbox" id="a7" onchange="tick('a7')"><label for="a7">Save SPX Live and UAT product URLs as bookmarks for daily use</label></div>
+
+    <div class="section-label">Reading Materials</div>
+    <div class="folder-note">All SPX Cache reference materials are housed in the SPX Cache Drive folder. Open the folder and read documents relevant to each day's theme.</div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Cache Knowledge Base (Drive Folder)</a><span class="time-chip">Browse</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Introduction and Overview</a><span class="time-chip">30 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX End-to-End Flow Guide</a><span class="time-chip">35 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX PM Process and Guidelines</a><span class="time-chip">30 min</span></div>
+
+    <div class="section-label">Reporting Expectations</div>
+    <div class="intro-block">During your first month, send a daily report to Yean Huar and Sherry Koo covering your learnings and reflections. After your first month, switch to a weekly report every Monday EOD covering risks, feature highlights, individual tasks, and your week's focus.</div>
+
+    <div class="section-label">End-of-Day Quiz</div>
+    <div class="quiz-block"><div class="quiz-q-text">Q1. What tool is used for internal messaging at SPX?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-1" value="A"><label>A. Slack</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-1" value="B"><label>B. Microsoft Teams</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-1" value="C"><label>C. SeaTalk</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-1" value="D"><label>D. WhatsApp Business</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q2. VPN access is required for?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-2" value="A"><label>A. Sending emails only</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-2" value="B"><label>B. Accessing systems and Confluence outside the office</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-2" value="C"><label>C. Joining video calls</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-2" value="D"><label>D. Using the canteen system</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q3. How often should you send a progress report during your first month?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-3" value="A"><label>A. Weekly on Mondays</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-3" value="B"><label>B. Monthly</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-3" value="C"><label>C. Daily</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-3" value="D"><label>D. Only when asked</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q4. SPX's strategic direction is described as?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-4" value="A"><label>A. Volume first, quality later</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-4" value="B"><label>B. Fast, Cheap and Good</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-4" value="C"><label>C. Digital-first, manual-second</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-4" value="D"><label>D. Global before local</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q5. Where do you complete compulsory eLearning courses?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-5" value="A"><label>A. Confluence</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-5" value="B"><label>B. Jira</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-5" value="C"><label>C. learning.sea.com</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-5" value="D"><label>D. Google Classroom</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q6. SOUP is used at SPX to?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-6" value="A"><label>A. Manage parcel exceptions</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-6" value="B"><label>B. Request system access and portal roles</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-6" value="C"><label>C. File HR leaves</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-6" value="D"><label>D. Submit expense claims</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q7. After your first month, when should the weekly report be sent?</div>
+      <div class="quiz-opt"><input type="radio" name="q0-7" value="A"><label>A. Every Friday EOD</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-7" value="B"><label>B. Every Monday EOD</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-7" value="C"><label>C. Every Wednesday morning</label></div>
+      <div class="quiz-opt"><input type="radio" name="q0-7" value="D"><label>D. Last day of the month</label></div>
+    </div>
+    <button class="check-btn" onclick="checkQuiz({'q0-1':'C','q0-2':'B','q0-3':'C','q0-4':'B','q0-5':'C','q0-6':'B','q0-7':'B'})">Check Answers</button>
+    <div class="quiz-block" style="margin-top:16px"><div class="quiz-q-text">Q8. In your own words, describe how a customer's order flows through the supply chain before reaching their door. What role does SPX play?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q9. Which team or stakeholder do you think you'll work most closely with in the Cache domain? Why?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q10. What does "Fast, Cheap and Good" mean to you? Do these three goals ever conflict — especially in a caching or storage context?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+
+    <hr class="section-divider">
+    <div class="section-label">Self Reflection</div>
+    <div class="reflection-wrap">
+      <div class="reflection-prompt">Take a few minutes to reflect honestly on your first day. There are no right or wrong answers here.</div>
+      <textarea class="open-textarea" style="min-height:90px" placeholder="What went well today? What felt overwhelming? What are you most curious about going into tomorrow?"></textarea>
+    </div>
+    <div class="section-label">Questions to Ask</div>
+    <div class="questions-hint">Use this space to capture any questions that came up today — for Yean Huar, Sherry Koo, or the team.</div>
+    <textarea class="questions-textarea" placeholder="e.g. Ask Yean Huar: What does success look like for me at the end of Week 1?&#10;Ask Sherry Koo: Which system access should I prioritise if anything is still pending?"></textarea>
+  </div>
+
+  <!-- DAY 2 -->
+  <div class="day-panel" id="day-1">
+    <div class="day-eyebrow">Tue, 22 Apr 2026</div>
+    <div class="day-title">Cache Fundamentals</div>
+    <div class="day-theme">What is Cache, why it exists, and how it fits into SPX logistics</div>
+    <div class="intro-block">Today you'll build a solid understanding of the Cache domain — what it means in the SPX context, the problem it solves in the parcel flow, and how cache stations or holding points interact with the broader network. Work closely with Sherry Koo to map out the concepts as you read.</div>
+
+    <div class="section-label">Reading Materials</div>
+    <div class="folder-note">Open the SPX Cache Drive folder and look for overview, concept, and flow documents related to Cache operations.</div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Cache Knowledge Base (Drive Folder)</a><span class="time-chip">Browse</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache Domain Overview and Objectives</a><span class="time-chip">35 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache vs Station: Key Differences</a><span class="time-chip">25 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Parcel Holding and SLA Rules in Cache</a><span class="time-chip">30 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Network Map and Cache Node Locations</a><span class="time-chip">20 min</span></div>
+
+    <div class="section-label">Tasks</div>
+    <div class="task-row"><input type="checkbox" id="t1-1" onchange="tick('t1-1')"><label for="t1-1">Discuss with Sherry Koo: What is the primary purpose of a Cache node in the SPX network? When does a parcel enter Cache vs going directly to a station?</label></div>
+    <div class="task-row"><input type="checkbox" id="t1-2" onchange="tick('t1-2')"><label for="t1-2">Review the SPX network map with Sherry Koo and identify where Cache nodes are positioned relative to hubs and stations</label></div>
+    <div class="task-row"><input type="checkbox" id="t1-3" onchange="tick('t1-3')"><label for="t1-3">Attend the team's daily standup and listen for any Cache-related updates or escalations</label></div>
+    <div class="task-row"><input type="checkbox" id="t1-4" onchange="tick('t1-4')"><label for="t1-4">Write a one-paragraph summary of what the Cache domain does and share with Sherry Koo for feedback</label></div>
+
+    <div class="section-label">End-of-Day Quiz</div>
+    <div class="quiz-block"><div class="quiz-q-text">Q1. The primary function of a Cache node in SPX is to?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-1" value="A"><label>A. Permanently store parcels that cannot be delivered</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-1" value="B"><label>B. Temporarily hold parcels to buffer capacity or await optimal dispatch conditions</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-1" value="C"><label>C. Process returns from buyers</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-1" value="D"><label>D. Replace linehaul hubs during peak season</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q2. SLA in the context of Cache refers to?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-2" value="A"><label>A. The storage lease agreement for the Cache facility</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-2" value="B"><label>B. The maximum time a parcel is permitted to remain in Cache before the next action is triggered</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-2" value="C"><label>C. The sorting labour agreement between SPX and the station</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-2" value="D"><label>D. A reporting cadence for Cache managers</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q3. A parcel is most likely routed to Cache when?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-3" value="A"><label>A. The buyer has requested a refund</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-3" value="B"><label>B. The destination station is at full capacity or the delivery attempt has been deferred</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-3" value="C"><label>C. The parcel has a misroute flag</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-3" value="D"><label>D. The linehaul truck is unavailable</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q4. How does Cache differ from a standard SPX station?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-4" value="A"><label>A. Cache handles last-mile delivery, stations handle linehaul</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-4" value="B"><label>B. Cache is a holding or buffer node, not a dispatch point for last-mile delivery to buyers</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-4" value="C"><label>C. Cache processes only international parcels</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-4" value="D"><label>D. There is no difference; they operate identically</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q5. Which team would you coordinate with most frequently as a Cache domain PM?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-5" value="A"><label>A. Shopee Marketing team</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-5" value="B"><label>B. In-Station and Exception teams, as Cache intersects both operational layers</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-5" value="C"><label>C. The finance audit team exclusively</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-5" value="D"><label>D. The buyer support team only</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q6. Parcels in Cache that breach their SLA are typically flagged as?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-6" value="A"><label>A. Completed deliveries</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-6" value="B"><label>B. Exceptions requiring manual intervention or escalation</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-6" value="C"><label>C. RTS (Return to Sender) automatically</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-6" value="D"><label>D. Cancelled orders</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q7. The SPX network map helps Cache PMs by?</div>
+      <div class="quiz-opt"><input type="radio" name="q1-7" value="A"><label>A. Showing real-time parcel GPS locations</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-7" value="B"><label>B. Illustrating how Cache nodes connect to hubs, stations, and linehaul routes to identify bottlenecks</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-7" value="C"><label>C. Replacing the need for daily standups</label></div>
+      <div class="quiz-opt"><input type="radio" name="q1-7" value="D"><label>D. Tracking driver attendance</label></div>
+    </div>
+    <button class="check-btn" onclick="checkQuiz({'q1-1':'B','q1-2':'B','q1-3':'B','q1-4':'B','q1-5':'B','q1-6':'B','q1-7':'B'})">Check Answers</button>
+    <div class="quiz-block" style="margin-top:16px"><div class="quiz-q-text">Q8. In your own words, explain why a logistics network like SPX would need a Cache layer. What problems does it solve?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q9. How do you think SLA breaches in Cache would affect the buyer's experience on Shopee? Walk through a scenario.</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q10. What surprised you most about how Cache fits into the SPX flow? What questions does it raise for you?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+
+    <hr class="section-divider">
+    <div class="section-label">Self Reflection</div>
+    <div class="reflection-wrap">
+      <div class="reflection-prompt">You've just encountered a domain that lives between storage and delivery. How does thinking about Cache change your mental model of SPX as a logistics system?</div>
+      <textarea class="open-textarea" style="min-height:90px" placeholder="What concepts clicked today? What still feels unclear? What do you want to explore more tomorrow?"></textarea>
+    </div>
+    <div class="section-label">Questions to Ask</div>
+    <div class="questions-hint">Capture questions for Yean Huar or Sherry Koo about Cache concepts, flow, or terminology.</div>
+    <textarea class="questions-textarea" placeholder="e.g. Ask Sherry Koo: Can you walk me through a real parcel that went through Cache last week — what triggered it and how was it resolved?&#10;Ask Yean Huar: What are the top Cache pain points the team is currently solving for?"></textarea>
+  </div>
+
+  <!-- DAY 3 -->
+  <div class="day-panel" id="day-2">
+    <div class="day-eyebrow">Wed, 23 Apr 2026</div>
+    <div class="day-title">Cache Processes and Systems</div>
+    <div class="day-theme">How Cache operations run day-to-day, from intake to dispatch</div>
+    <div class="intro-block">Today you'll go deeper into how Cache actually operates — the intake process, how parcels are tracked and managed while in holding, the dispatch triggers, and the systems used to monitor Cache health. Shadow Sherry Koo on any live operations review if available.</div>
+
+    <div class="section-label">Reading Materials</div>
+    <div class="folder-note">Look for SOP documents, system guides, and process flow diagrams related to Cache intake, tracking, and dispatch.</div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Cache Knowledge Base (Drive Folder)</a><span class="time-chip">Browse</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache Intake and Scan SOP</a><span class="time-chip">35 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Parcel Tracking and Status Management in Cache</a><span class="time-chip">30 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache Dispatch Rules and Triggers</a><span class="time-chip">30 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">System Tools Used in Cache Operations</a><span class="time-chip">25 min</span></div>
+
+    <div class="section-label">Tasks</div>
+    <div class="task-row"><input type="checkbox" id="t2-1" onchange="tick('t2-1')"><label for="t2-1">Review the Cache intake SOP with Sherry Koo and identify the scan checkpoints a parcel passes through on arrival</label></div>
+    <div class="task-row"><input type="checkbox" id="t2-2" onchange="tick('t2-2')"><label for="t2-2">Log in to the relevant SPX system (UAT environment) and explore the Cache-related dashboards or status screens</label></div>
+    <div class="task-row"><input type="checkbox" id="t2-3" onchange="tick('t2-3')"><label for="t2-3">Discuss with Sherry Koo: What are the dispatch triggers for a parcel held in Cache? Walk through at least two scenarios</label></div>
+    <div class="task-row"><input type="checkbox" id="t2-4" onchange="tick('t2-4')"><label for="t2-4">Map the Cache parcel lifecycle on paper or digitally — from scan-in to dispatch — and share with Sherry Koo for review</label></div>
+
+    <div class="section-label">End-of-Day Quiz</div>
+    <div class="quiz-block"><div class="quiz-q-text">Q1. The first step when a parcel arrives at a Cache node is to?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-1" value="A"><label>A. Assign it a driver immediately</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-1" value="B"><label>B. Scan the parcel to register its arrival and update its status in the system</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-1" value="C"><label>C. Contact the buyer to confirm receipt</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-1" value="D"><label>D. File a manifest discrepancy report</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q2. Manifest discrepancy in Cache occurs when?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-2" value="A"><label>A. A driver is absent</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-2" value="B"><label>B. The physical parcel count at Cache does not match the system-recorded manifest from the sending node</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-2" value="C"><label>C. The SLA timer has been paused</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-2" value="D"><label>D. A buyer cancels their order mid-transit</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q3. A Cache dispatch is most likely triggered by?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-3" value="A"><label>A. A buyer complaint to customer support</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-3" value="B"><label>B. Destination station capacity becoming available, an SLA deadline approaching, or a scheduled batch dispatch window</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-3" value="C"><label>C. A new seller joining Shopee</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-3" value="D"><label>D. The hub manager's approval only</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q4. Which system would a Cache PM primarily use to monitor parcel statuses in real time?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-4" value="A"><label>A. Google Sheets</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-4" value="B"><label>B. The SPX internal operations portal or dashboard (accessible via SOUP-provisioned roles)</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-4" value="C"><label>C. Email inbox</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-4" value="D"><label>D. Shopee's buyer-facing app</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q5. Bag assignment in Cache refers to?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-5" value="A"><label>A. Allocating storage bags for returned items</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-5" value="B"><label>B. Grouping parcels into a sealed bag with a manifest for onward dispatch to the next node</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-5" value="C"><label>C. Assigning a bag number to a driver's vehicle</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-5" value="D"><label>D. Tagging oversized parcels for special handling</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q6. When a parcel's status is stuck in Cache beyond its SLA, the appropriate action is to?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-6" value="A"><label>A. Wait for the buyer to follow up</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-6" value="B"><label>B. Escalate it as an exception and investigate the root cause — capacity issue, scan error, or routing problem</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-6" value="C"><label>C. Automatically trigger RTS</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-6" value="D"><label>D. Delete the parcel record and rebook</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q7. A Cache PM's role in system operations is best described as?</div>
+      <div class="quiz-opt"><input type="radio" name="q2-7" value="A"><label>A. Physically scanning parcels at the facility</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-7" value="B"><label>B. Designing and improving the processes, rules, and system logic that govern how Cache operates — not executing operations manually</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-7" value="C"><label>C. Managing linehaul truck schedules</label></div>
+      <div class="quiz-opt"><input type="radio" name="q2-7" value="D"><label>D. Handling buyer refund requests</label></div>
+    </div>
+    <button class="check-btn" onclick="checkQuiz({'q2-1':'B','q2-2':'B','q2-3':'B','q2-4':'B','q2-5':'B','q2-6':'B','q2-7':'B'})">Check Answers</button>
+    <div class="quiz-block" style="margin-top:16px"><div class="quiz-q-text">Q8. Walk through what happens — step by step — when a parcel arrives at a Cache node and is eventually dispatched to a station. What systems and people are involved at each step?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q9. What do you think are the most common root causes of SLA breaches in Cache? What would you investigate first?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q10. If you were designing a new Cache monitoring dashboard, what three metrics would you prioritise and why?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+
+    <hr class="section-divider">
+    <div class="section-label">Self Reflection</div>
+    <div class="reflection-wrap">
+      <div class="reflection-prompt">Cache is where logistics operations meet system design. How has today's exploration of processes and systems shaped how you see your role as a PM in this domain?</div>
+      <textarea class="open-textarea" style="min-height:90px" placeholder="What processes felt intuitive? What system logic surprised you? Where do you see opportunities to improve?"></textarea>
+    </div>
+    <div class="section-label">Questions to Ask</div>
+    <div class="questions-hint">Capture process or system questions for Sherry Koo or Yean Huar.</div>
+    <textarea class="questions-textarea" placeholder="e.g. Ask Sherry Koo: What is the most common reason a dispatch gets delayed in Cache right now?&#10;Ask Yean Huar: Are there any ongoing system improvement tickets related to Cache that I should be aware of?"></textarea>
+  </div>
+
+  <!-- DAY 4 -->
+  <div class="day-panel" id="day-3">
+    <div class="day-eyebrow">Thu, 24 Apr 2026</div>
+    <div class="day-title">Exception Handling and Edge Cases in Cache</div>
+    <div class="day-theme">What breaks, why it breaks, and how to fix it</div>
+    <div class="intro-block">Today focuses on the exception layer of Cache — misroutes, manifest discrepancies, RTS triggers, and parcels that fall outside normal flow. Understanding these edge cases is critical for a Cache PM because most product improvement opportunities are found here. Work through real or simulated cases with Sherry Koo.</div>
+
+    <div class="section-label">Reading Materials</div>
+    <div class="folder-note">Look for exception management guides, RTS policy documents, and misroute handling SOPs in the Cache Drive folder.</div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Cache Knowledge Base (Drive Folder)</a><span class="time-chip">Browse</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache Exception Management Guide</a><span class="time-chip">35 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Misroute Handling SOP</a><span class="time-chip">25 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">RTS (Return to Sender) Policy and Workflow</a><span class="time-chip">30 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache-to-Exception Escalation Playbook</a><span class="time-chip">20 min</span></div>
+
+    <div class="section-label">Tasks</div>
+    <div class="task-row"><input type="checkbox" id="t3-1" onchange="tick('t3-1')"><label for="t3-1">Review a set of recent exception cases with Sherry Koo — identify the root cause category for each (misroute, SLA breach, scan error, manifest discrepancy)</label></div>
+    <div class="task-row"><input type="checkbox" id="t3-2" onchange="tick('t3-2')"><label for="t3-2">Walk through the RTS workflow with Sherry Koo: What conditions trigger RTS from Cache? What happens to the parcel and the seller?</label></div>
+    <div class="task-row"><input type="checkbox" id="t3-3" onchange="tick('t3-3')"><label for="t3-3">Discuss with Yean Huar: Which exception type is most frequent in Cache right now, and what product improvements are being explored to reduce it?</label></div>
+    <div class="task-row"><input type="checkbox" id="t3-4" onchange="tick('t3-4')"><label for="t3-4">Draft a short write-up (half a page) on one exception type — describe what it is, what causes it, and one potential product solution. Share with Sherry Koo.</label></div>
+
+    <div class="section-label">End-of-Day Quiz</div>
+    <div class="quiz-block"><div class="quiz-q-text">Q1. A misroute occurs in Cache when?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-1" value="A"><label>A. A parcel is scanned twice at the same node</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-1" value="B"><label>B. A parcel has been directed to the wrong Cache node or station based on incorrect routing logic or labelling</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-1" value="C"><label>C. A driver departs before all parcels are loaded</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-1" value="D"><label>D. A buyer changes their delivery address after dispatch</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q2. RTS (Return to Sender) is triggered from Cache when?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-2" value="A"><label>A. The seller requests a refund</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-2" value="B"><label>B. A parcel exceeds the maximum permitted holding time, delivery is deemed infeasible, or a buyer-initiated return is confirmed</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-2" value="C"><label>C. The Cache node runs out of storage space</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-2" value="D"><label>D. A manifest discrepancy is detected</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q3. When a manifest discrepancy is found at Cache intake, the first step should be to?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-3" value="A"><label>A. Immediately trigger RTS for all unmatched parcels</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-3" value="B"><label>B. Document the discrepancy, hold the affected parcels, and investigate with the sending node before taking further action</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-3" value="C"><label>C. Contact the buyer directly</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-3" value="D"><label>D. Delete the manifest record and rescan all parcels</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q4. Which of the following is the most common root cause of SLA breaches in Cache?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-4" value="A"><label>A. Buyers requesting delivery reschedules</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-4" value="B"><label>B. Destination station overcapacity, causing parcels to be held beyond the planned dispatch window</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-4" value="C"><label>C. Seller packaging errors</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-4" value="D"><label>D. Incorrect buyer address entered at order creation</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q5. A Cache-to-Exception escalation is required when?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-5" value="A"><label>A. Any parcel is scanned at Cache</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-5" value="B"><label>B. A parcel cannot be resolved through standard Cache operating procedures and requires specialist exception handling</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-5" value="C"><label>C. A new driver joins the route</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-5" value="D"><label>D. The daily parcel volume exceeds forecast</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q6. As a PM, finding patterns in exception data is valuable because?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-6" value="A"><label>A. It helps justify headcount increase requests</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-6" value="B"><label>B. Recurring exception patterns indicate systemic gaps in process or system logic that product improvements can address</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-6" value="C"><label>C. It provides content for monthly management presentations only</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-6" value="D"><label>D. It replaces the need for root cause analysis</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q7. A high RTS rate from Cache most directly harms?</div>
+      <div class="quiz-opt"><input type="radio" name="q3-7" value="A"><label>A. The Cache facility's electricity costs</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-7" value="B"><label>B. Seller confidence in SPX as a reliable logistics partner, and buyer satisfaction on Shopee</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-7" value="C"><label>C. Linehaul truck fuel efficiency</label></div>
+      <div class="quiz-opt"><input type="radio" name="q3-7" value="D"><label>D. The SPX marketing team's campaign metrics</label></div>
+    </div>
+    <button class="check-btn" onclick="checkQuiz({'q3-1':'B','q3-2':'B','q3-3':'B','q3-4':'B','q3-5':'B','q3-6':'B','q3-7':'B'})">Check Answers</button>
+    <div class="quiz-block" style="margin-top:16px"><div class="quiz-q-text">Q8. Walk through a scenario where a misrouted parcel arrives at your Cache node. What steps would you take, who would you involve, and how would you prevent it from happening again?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q9. How do exception rates in Cache connect to the seller experience on Shopee? Who bears the cost of a high exception rate?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q10. Pick one exception type you explored today. If you could build one product feature to reduce it, what would it be and why?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+
+    <hr class="section-divider">
+    <div class="section-label">Self Reflection</div>
+    <div class="reflection-wrap">
+      <div class="reflection-prompt">Exceptions are where the system shows its weaknesses — and where PMs create the most value. What did today's deep dive into edge cases reveal about the Cache domain?</div>
+      <textarea class="open-textarea" style="min-height:90px" placeholder="What was the most eye-opening exception you reviewed? What product instinct did it trigger in you?"></textarea>
+    </div>
+    <div class="section-label">Questions to Ask</div>
+    <div class="questions-hint">Write down exception-related questions for Yean Huar or Sherry Koo.</div>
+    <textarea class="questions-textarea" placeholder="e.g. Ask Yean Huar: What exception type keeps you up at night — and what's been tried to fix it so far?&#10;Ask Sherry Koo: Is there an escalation playbook I should study before Week 2?"></textarea>
+  </div>
+
+  <!-- DAY 5 -->
+  <div class="day-panel" id="day-4">
+    <div class="day-eyebrow">Fri, 25 Apr 2026</div>
+    <div class="day-title">Performance, Stakeholders, and Week 1 Wrap-Up</div>
+    <div class="day-theme">Measuring Cache health, aligning with stakeholders, and reflecting on your first week</div>
+    <div class="intro-block">Your final day of Week 1. Today is about zooming out — understanding how Cache performance is measured, who the key stakeholders are across the SPX ecosystem, and reflecting on everything you've learned. Have your Week 1 check-in with Yean Huar and Sherry Koo today.</div>
+
+    <div class="section-label">Reading Materials</div>
+    <div class="folder-note">Look for KPI guides, stakeholder maps, and SPX values documents in the Cache Drive folder.</div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Cache Knowledge Base (Drive Folder)</a><span class="time-chip">Browse</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">Cache KPI and Performance Dashboard Guide</a><span class="time-chip">35 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Stakeholder Map and Cross-Domain Interfaces</a><span class="time-chip">25 min</span></div>
+    <div class="reading-row"><a href="https://drive.google.com/drive/folders/10kFrHieEeIggQx0IPFoZNzplrSuyTUJJ" target="_blank">SPX Values and Culture Deck</a><span class="time-chip">20 min</span></div>
+
+    <div class="section-label">Tasks</div>
+    <div class="task-row"><input type="checkbox" id="t4-1" onchange="tick('t4-1')"><label for="t4-1">Review the Cache KPI scorecard with Sherry Koo — identify which metrics are currently healthy and which need attention</label></div>
+    <div class="task-row"><input type="checkbox" id="t4-2" onchange="tick('t4-2')"><label for="t4-2">Map out the key stakeholders Cherry will interface with as a Cache PM — include In-Station, Exception, Workforce, and any cross-functional teams</label></div>
+    <div class="task-row"><input type="checkbox" id="t4-3" onchange="tick('t4-3')"><label for="t4-3">Have a 30-minute Week 1 check-in with Yean Huar and Sherry Koo — share key learnings, knowledge gaps, and your Week 2 plan</label></div>
+    <div class="task-row"><input type="checkbox" id="t4-4" onchange="tick('t4-4')"><label for="t4-4">Write a brief Week 1 summary covering what you learned, what surprised you, and one improvement idea you'd explore in Week 2. Share with Yean Huar.</label></div>
+    <div class="task-row"><input type="checkbox" id="t4-5" onchange="tick('t4-5')"><label for="t4-5">Identify one Cache pain point you observed this week and share your initial product thinking with Sherry Koo</label></div>
+
+    <div class="section-label">End-of-Day Quiz</div>
+    <div class="quiz-block"><div class="quiz-q-text">Q1. Cache KPIs are most actionable when reviewed?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-1" value="A"><label>A. Once a month during management reviews</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-1" value="B"><label>B. Only when an SLA breach is reported</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-1" value="C"><label>C. Daily or near real-time, with prompt action taken on anomalies</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-1" value="D"><label>D. Quarterly during planning cycles only</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q2. The key metric that reflects how efficiently Cache is fulfilling its buffer role is?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-2" value="A"><label>A. Number of staff on shift</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-2" value="B"><label>B. Average dwell time (how long parcels spend in Cache before dispatch) relative to SLA targets</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-2" value="C"><label>C. Number of trucks arriving per day</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-2" value="D"><label>D. Buyer satisfaction survey scores</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q3. When Cache performance degrades (e.g. rising dwell times), the Cache PM's primary responsibility is to?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-3" value="A"><label>A. Manually sort parcels at the facility</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-3" value="B"><label>B. Diagnose the root cause, coordinate with relevant stakeholders, and drive system or process improvements to resolve it</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-3" value="C"><label>C. Escalate immediately to Shopee's CEO</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-3" value="D"><label>D. Pause all Cache intake until the issue resolves itself</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q4. Which SPX domain is most directly impacted by Cache performance issues?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-4" value="A"><label>A. Shopee's marketing team</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-4" value="B"><label>B. In-Station operations, since Cache feeds parcels directly into station workflows</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-4" value="C"><label>C. The sea.com HR portal</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-4" value="D"><label>D. Shopee's payment team</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q5. A Cache PM adds the most value by?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-5" value="A"><label>A. Physically managing the Cache facility day-to-day</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-5" value="B"><label>B. Using data, stakeholder insight, and product thinking to design systems and processes that prevent issues before they occur</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-5" value="C"><label>C. Attending every ops standup without contributing</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-5" value="D"><label>D. Writing daily status reports without acting on the findings</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q6. A strong Week 1 reflection for a Cache PM should include?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-6" value="A"><label>A. Only a list of tasks completed</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-6" value="B"><label>B. Key learnings across Cache flow and exceptions, knowledge gaps to address in Week 2, and at least one product improvement idea</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-6" value="C"><label>C. A complaint about system access delays</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-6" value="D"><label>D. A summary of all meetings attended</label></div>
+    </div>
+    <div class="quiz-block"><div class="quiz-q-text">Q7. SPX values and culture matter to a Cache PM because?</div>
+      <div class="quiz-opt"><input type="radio" name="q4-7" value="A"><label>A. They are only relevant during performance reviews</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-7" value="B"><label>B. They shape how cross-domain decisions are made, how teams collaborate under pressure, and what good looks like at SPX</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-7" value="C"><label>C. They are only enforced for senior staff</label></div>
+      <div class="quiz-opt"><input type="radio" name="q4-7" value="D"><label>D. They replace the need for process documentation</label></div>
+    </div>
+    <button class="check-btn" onclick="checkQuiz({'q4-1':'C','q4-2':'B','q4-3':'B','q4-4':'B','q4-5':'B','q4-6':'B','q4-7':'B'})">Check Answers</button>
+    <div class="quiz-block" style="margin-top:16px"><div class="quiz-q-text">Q8. Which part of Cache operations do you feel most confident about after Week 1, and which area do you most want to develop further?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q9. Describe one product improvement idea you'd want to explore in Week 2. What problem does it solve, who benefits, and how would you validate it?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+    <div class="quiz-block"><div class="quiz-q-text">Q10. How would you describe the Cache domain — and your role in it — to a new colleague who has never heard of SPX?</div><textarea class="open-textarea" placeholder="Write your reflection here..."></textarea></div>
+
+    <hr class="section-divider">
+    <div class="section-label">Self Reflection</div>
+    <div class="reflection-wrap">
+      <div class="reflection-prompt">You've completed your first week. Be honest with yourself — what were your biggest wins, your biggest surprises, and the areas where you still feel uncertain? There is no pressure to have it all figured out.</div>
+      <textarea class="open-textarea" style="min-height:100px" placeholder="Week 1 overall reflection: What energised you? What challenged you? What do you want to do differently in Week 2?"></textarea>
+    </div>
+    <div class="section-label">Questions to Ask</div>
+    <div class="questions-hint">End-of-week questions for Yean Huar, Sherry Koo, or yourself heading into Week 2.</div>
+    <textarea class="questions-textarea" placeholder="e.g. Ask Yean Huar: Based on what you've observed, what should I prioritise in Week 2?&#10;Ask Sherry Koo: What are the unwritten norms of this team I should know?&#10;Ask yourself: What is the one thing I want to improve before my next check-in?"></textarea>
+  </div>
+
+  <div class="footer">
+    <span class="footer-brand">Onboarding Guru</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-item">Cherry Lim</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-item">SPX Cache</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-item">Manager: Yean Huar</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-item">Buddy: Sherry Koo</span>
+    <span class="footer-sep">|</span>
+    <span class="footer-item">Apr 2026</span>
+  </div>
+</div>
+
+<script>
+const allTaskIds = ['a1','a2','a3','a4','a5','a6','a7','t1-1','t1-2','t1-3','t1-4','t2-1','t2-2','t2-3','t2-4','t3-1','t3-2','t3-3','t3-4','t4-1','t4-2','t4-3','t4-4','t4-5'];
+const checked = {};
+function tick(id) {
+  const el = document.getElementById(id);
+  checked[id] = el.checked;
+  el.nextElementSibling.classList.toggle('done', el.checked);
+  const done = Object.values(checked).filter(Boolean).length;
+  document.getElementById('progress').style.width = Math.round((done / allTaskIds.length) * 100) + '%';
+}
+function switchDay(idx) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.day-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+}
+function checkQuiz(answers) {
+  Object.entries(answers).forEach(([name, correct]) => {
+    const selected = document.querySelector(`input[name="${name}"]:checked`);
+    document.querySelectorAll(`input[name="${name}"]`).forEach(inp => {
+      const lbl = inp.nextElementSibling;
+      lbl.classList.remove('correct','wrong');
+      if (inp.value === correct) lbl.classList.add('correct');
+      else if (selected && inp === selected) lbl.classList.add('wrong');
+    });
+  });
+}
+</script>
+</body>
+</html>
